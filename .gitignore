@@ -1,0 +1,5 @@
+bin/
+obj/
+v16/
+.vs/
+launchSettings.json
