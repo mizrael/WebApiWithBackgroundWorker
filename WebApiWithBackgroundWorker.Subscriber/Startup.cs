@@ -41,7 +41,7 @@ namespace WebApiWithBackgroundWorker
                     Uri = new Uri(connStr)
                 };
             });
-            services.AddSingleton<IRabbitPersistentConnection, RabbitPersistentConnection>();
+            services.AddSingleton<IBusConnection, RabbitPersistentConnection>();
             services.AddSingleton<ISubscriber, RabbitSubscriber>();
             services.AddHostedService<BackgroundSubscriberWorker>();
         }

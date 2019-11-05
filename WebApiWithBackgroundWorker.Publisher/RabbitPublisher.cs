@@ -8,10 +8,10 @@ namespace WebApiWithBackgroundWorker.Publisher
 {
     public class RabbitPublisher
     {
-        private readonly IRabbitPersistentConnection _connection;
+        private readonly IBusConnection _connection;
         private const string ExchangeName = "messages";
 
-        public RabbitPublisher(IRabbitPersistentConnection persistentConnection)
+        public RabbitPublisher(IBusConnection persistentConnection)
         {
             _connection = persistentConnection ?? throw new ArgumentNullException(nameof(persistentConnection));            
         }

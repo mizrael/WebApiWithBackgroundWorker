@@ -4,7 +4,7 @@ using RabbitMQ.Client;
 namespace WebApiWithBackgroundWorker.Common.Messaging
 {
 
-    public class RabbitPersistentConnection : IDisposable, IRabbitPersistentConnection
+    public class RabbitPersistentConnection : IDisposable, IBusConnection
     {
         private readonly IConnectionFactory _connectionFactory;
         private IConnection _connection;

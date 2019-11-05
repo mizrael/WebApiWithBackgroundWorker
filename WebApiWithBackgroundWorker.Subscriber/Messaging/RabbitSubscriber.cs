@@ -11,13 +11,13 @@ namespace WebApiWithBackgroundWorker.Subscriber.Messaging
 {
     public class RabbitSubscriber : ISubscriber, IDisposable
     {
-        private readonly IRabbitPersistentConnection _connection;
+        private readonly IBusConnection _connection;
         private IModel _channel;
         private QueueDeclareOk _queue;
 
         private const string ExchangeName = "messages";
 
-        public RabbitSubscriber(IRabbitPersistentConnection connection)
+        public RabbitSubscriber(IBusConnection connection)
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
         }

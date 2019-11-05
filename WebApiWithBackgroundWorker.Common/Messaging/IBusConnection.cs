@@ -2,7 +2,7 @@
 
 namespace WebApiWithBackgroundWorker.Common.Messaging
 {
-    public interface IRabbitPersistentConnection
+    public interface IBusConnection
     {
         bool IsConnected { get; }
 
