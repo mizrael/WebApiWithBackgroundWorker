@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/WebApiWithBackgroundWorker.Publisher/WebApiWithBackgroundWorker.Publisher.csproj",
+                "${workspaceFolder}/WebApiWithBackgroundWorker.sln",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],

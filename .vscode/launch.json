@@ -10,9 +10,22 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/WebApiWithBackgroundWorker.Publisher/bin/Debug/netcoreapp3.0/WebApiWithBackgroundWorker.Publisher.dll",
+            "program": "${workspaceFolder}/WebApiWithBackgroundWorker.Publisher/bin/Debug/netcoreapp3.1/WebApiWithBackgroundWorker.Publisher.dll",
             "args": [],
             "cwd": "${workspaceFolder}/WebApiWithBackgroundWorker.Publisher",
+            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": ".NET Core Launch (web)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceFolder}/WebApiWithBackgroundWorker.Subscriber/bin/Debug/netcoreapp3.1/WebApiWithBackgroundWorker.Subscriber.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/WebApiWithBackgroundWorker.Subscriber",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false
