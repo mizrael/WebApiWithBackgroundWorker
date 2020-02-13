@@ -11,7 +11,7 @@ namespace WebApiWithBackgroundWorker.Publisher
         private const string ExchangeName = "messages"; 
         
         private readonly IBusConnection _connection;        
-        private readonly IModel _channel;
+        private IModel _channel;
         private readonly IBasicProperties _properties;
 
         public RabbitPublisher(IBusConnection connection)
