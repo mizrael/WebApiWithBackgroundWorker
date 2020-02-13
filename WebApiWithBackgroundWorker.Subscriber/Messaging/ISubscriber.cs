@@ -1,4 +1,5 @@
 ﻿using System;
+using RabbitMQ.Client.Events;
 using WebApiWithBackgroundWorker.Common.Messaging;
 
 namespace WebApiWithBackgroundWorker.Subscriber.Messaging
@@ -6,6 +7,6 @@ namespace WebApiWithBackgroundWorker.Subscriber.Messaging
     public interface ISubscriber
     {
         void Start();
-        event EventHandler<Message> OnMessage;
+        event AsyncEventHandler<RabbitSubscriberEventArgs> OnMessage;
     }
 }

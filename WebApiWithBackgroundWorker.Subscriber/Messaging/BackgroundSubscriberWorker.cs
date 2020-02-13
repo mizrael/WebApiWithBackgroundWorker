@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,30 +11,35 @@ namespace WebApiWithBackgroundWorker.Subscriber.Messaging
     public class BackgroundSubscriberWorker : BackgroundService
     {
         private readonly ISubscriber _subscriber;
-        private readonly IMessagesRepository _messagesRepository;
         private readonly ILogger<BackgroundSubscriberWorker> _logger;
 
-        public BackgroundSubscriberWorker(ISubscriber subscriber, IMessagesRepository messagesRepository, ILogger<BackgroundSubscriberWorker> logger)
+        private readonly IProducer _producer;
+        private readonly IEnumerable<IConsumer> _consumers;
+
+        public BackgroundSubscriberWorker(ISubscriber subscriber, IProducer producer, IEnumerable<IConsumer> consumers, ILogger<BackgroundSubscriberWorker> logger)
         {
-            _messagesRepository = messagesRepository ?? throw new ArgumentNullException(nameof(messagesRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             _subscriber = subscriber ?? throw new ArgumentNullException(nameof(subscriber));
-            _subscriber.OnMessage += OnMessage;
-        }
+            _subscriber.OnMessage += OnMessageAsync;
 
-        private void OnMessage(object sender, Common.Messaging.Message message)
+            _producer = producer ?? throw new ArgumentNullException(nameof(producer));
+            _consumers = consumers ?? Enumerable.Empty<Consumer>();
+        }
+ 
+        private async Task OnMessageAsync(object sender, RabbitSubscriberEventArgs args)
         {
-            _logger.LogInformation($"got a new message: {message.Text} at {message.CreationDate}");
+            _logger.LogInformation($"got a new message: {args.Message.Text} at {args.Message.CreationDate}");
 
-            _messagesRepository.Add(message);
+            await _producer.PublishAsync(args.Message);
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _subscriber.Start();
-
-            return Task.CompletedTask;
+            
+            var consumerTasks = _consumers.Select(c => c.BeginConsumeAsync(stoppingToken));
+            await Task.WhenAll(consumerTasks);
         }
     }
 }

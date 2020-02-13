@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using WebApiWithBackgroundWorker.Common.Messaging;
+using System.Threading.Channels;
+using Microsoft.Extensions.Logging;
 
 namespace WebApiWithBackgroundWorker.Subscriber.Messaging
 {
@@ -50,21 +52,21 @@ namespace WebApiWithBackgroundWorker.Subscriber.Messaging
 
         private void InitSubscription()
         {
-            var consumer = new EventingBasicConsumer(_channel);
+            var consumer = new AsyncEventingBasicConsumer(_channel);
             
-            consumer.Received += OnMessageReceived;
+            consumer.Received += OnMessageReceivedAsync;
             
             _channel.BasicConsume(queue: _queue.QueueName, autoAck: false, consumer: consumer);
         }
 
-        private void OnMessageReceived(object sender, BasicDeliverEventArgs eventArgs)
+        private async Task OnMessageReceivedAsync(object sender, BasicDeliverEventArgs eventArgs)
         {
             var body = Encoding.UTF8.GetString(eventArgs.Body);
             var message = JsonSerializer.Deserialize<Message>(body);
-            this.OnMessage(this, message);
+            await this.OnMessage(this, new RabbitSubscriberEventArgs(message));
         }
 
-        public event EventHandler<Message> OnMessage;
+        public event AsyncEventHandler<RabbitSubscriberEventArgs> OnMessage;
 
         public void Start()
         {

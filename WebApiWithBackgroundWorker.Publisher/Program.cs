@@ -1,6 +1,7 @@
 ﻿using System;
 using WebApiWithBackgroundWorker.Common.Messaging;
 using RabbitMQ.Client;
+using Microsoft.Extensions.Configuration;
 
 namespace WebApiWithBackgroundWorker.Publisher
 {
@@ -8,7 +9,13 @@ namespace WebApiWithBackgroundWorker.Publisher
     {
         static void Main(string[] args)
         {
-            var connectionString = Environment.GetEnvironmentVariable("rabbit");
+            var builder = new ConfigurationBuilder();
+            builder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            
+            builder.AddUserSecrets<Program>();
+            var config = builder.Build();
+
+            var connectionString = config["rabbit"];
 
             var connectionFactory = new ConnectionFactory()
             {

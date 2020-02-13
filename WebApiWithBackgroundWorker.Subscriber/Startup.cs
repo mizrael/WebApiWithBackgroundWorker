@@ -38,11 +38,33 @@ namespace WebApiWithBackgroundWorker
                 var connStr = this.Configuration["rabbit"];
                 return new ConnectionFactory()
                 {
-                    Uri = new Uri(connStr)
+                    Uri = new Uri(connStr),
+                    DispatchConsumersAsync = true // this is mandatory to have Async Subscribers
                 };
             });
             services.AddSingleton<IBusConnection, RabbitPersistentConnection>();
             services.AddSingleton<ISubscriber, RabbitSubscriber>();
+
+            var channel = System.Threading.Channels.Channel.CreateBounded<Message>(100);
+            services.AddSingleton(channel);
+
+            services.AddSingleton<IProducer>(ctx =>{
+                var channel = ctx.GetRequiredService<System.Threading.Channels.Channel<Message>>();
+                var logger = ctx.GetRequiredService<ILogger<Producer>>();
+                return new Producer(channel.Writer, logger);
+            });
+
+            services.AddSingleton<IEnumerable<IConsumer>>(ctx =>{
+                var channel = ctx.GetRequiredService<System.Threading.Channels.Channel<Message>>();
+                var logger = ctx.GetRequiredService<ILogger<Consumer>>();
+                var repo = ctx.GetRequiredService<IMessagesRepository>();
+
+                var consumers = Enumerable.Range(1, 10)
+                                          .Select(i => new Consumer(channel.Reader, logger, i, repo))
+                                          .ToArray();
+                return consumers;
+            });
+
             services.AddHostedService<BackgroundSubscriberWorker>();
         }
 
