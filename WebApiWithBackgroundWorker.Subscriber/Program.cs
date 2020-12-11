@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 
-namespace WebApiWithBackgroundWorker
+namespace WebApiWithBackgroundWorker.Subscriber
 {
     public class Program
     {
@@ -13,7 +13,8 @@ namespace WebApiWithBackgroundWorker
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration(builder =>{
+                .ConfigureAppConfiguration(builder =>
+                {
                     builder.AddUserSecrets<Startup>();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>

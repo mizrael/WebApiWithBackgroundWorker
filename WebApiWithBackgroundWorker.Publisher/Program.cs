@@ -12,17 +12,20 @@ namespace WebApiWithBackgroundWorker.Publisher
             var builder = new ConfigurationBuilder();
             builder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             
-            builder.AddUserSecrets<Program>();
             var config = builder.Build();
 
-            var connectionString = config["rabbit"];
-
+            var rabbitConfig = config.GetSection("RabbitMQ");
             var connectionFactory = new ConnectionFactory()
             {
-                Uri = new Uri(connectionString)
-            };            
+                HostName = rabbitConfig["HostName"],
+                UserName = rabbitConfig["UserName"],
+                Password = rabbitConfig["Password"],
+                Port = AmqpTcpEndpoint.UseDefaultPort,
+                DispatchConsumersAsync = true
+            };
+
             var connection = new RabbitPersistentConnection(connectionFactory);
-            var publisher = new RabbitPublisher(connection);                       
+            var publisher = new RabbitPublisher(connection, rabbitConfig["Exchange"]);                       
 
             while (true)
             {

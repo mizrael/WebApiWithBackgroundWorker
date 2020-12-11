@@ -1,27 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text;
 using System.Threading.Tasks;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using WebApiWithBackgroundWorker.Common.Messaging;
-using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 
 namespace WebApiWithBackgroundWorker.Subscriber.Messaging
 {
+    public record RabbitSubscriberOptions(string ExchangeName, string QueueName, string DeadLetterExchangeName, string DeadLetterQueue);
+
     public class RabbitSubscriber : ISubscriber, IDisposable
     {
         private readonly IBusConnection _connection;
         private IModel _channel;
-        private QueueDeclareOk _queue;
+        private readonly ILogger<RabbitSubscriber> _logger;
+        
+        private readonly RabbitSubscriberOptions _options;
 
-        private const string ExchangeName = "messages";
-
-        public RabbitSubscriber(IBusConnection connection)
+        public RabbitSubscriber(IBusConnection connection, RabbitSubscriberOptions options, ILogger<RabbitSubscriber> logger)
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         private void InitChannel()
@@ -30,18 +32,23 @@ namespace WebApiWithBackgroundWorker.Subscriber.Messaging
             
             _channel = _connection.CreateChannel();
 
-            _channel.ExchangeDeclare(exchange: ExchangeName, type: ExchangeType.Fanout);
-            
-            // since we're using a Fanout exchange, we don't specify the name of the queue
-            // but we let Rabbit generate one for us. This also means that we need to store the
-            // queue name to be able to consume messages from it
-            _queue = _channel.QueueDeclare(queue: string.Empty,
+            _channel.ExchangeDeclare(exchange: _options.DeadLetterExchangeName, type: ExchangeType.Fanout);
+            _channel.QueueDeclare(queue: _options.DeadLetterQueue,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+            _channel.QueueBind(_options.DeadLetterQueue, _options.DeadLetterExchangeName, routingKey: string.Empty, arguments: null);
+
+            _channel.ExchangeDeclare(exchange: _options.ExchangeName, type: ExchangeType.Fanout);
+                        
+            _channel.QueueDeclare(queue: _options.QueueName,
                 durable: false,
                 exclusive: false,
                 autoDelete: true,
                 arguments: null);
 
-            _channel.QueueBind(_queue.QueueName, ExchangeName, string.Empty, null);
+            _channel.QueueBind(_options.QueueName, _options.ExchangeName, string.Empty, null);
 
             _channel.CallbackException += (sender, ea) =>
             {
@@ -56,14 +63,29 @@ namespace WebApiWithBackgroundWorker.Subscriber.Messaging
             
             consumer.Received += OnMessageReceivedAsync;
             
-            _channel.BasicConsume(queue: _queue.QueueName, autoAck: false, consumer: consumer);
+            _channel.BasicConsume(queue: _options.QueueName, autoAck: false, consumer: consumer);
         }
 
         private async Task OnMessageReceivedAsync(object sender, BasicDeliverEventArgs eventArgs)
         {
-            var body = Encoding.UTF8.GetString(eventArgs.Body);
-            var message = JsonSerializer.Deserialize<Message>(body);
-            await this.OnMessage(this, new RabbitSubscriberEventArgs(message));
+            var consumer = sender as IBasicConsumer;
+            var channel = consumer?.Model ?? _channel;
+
+            try
+            {
+                var body = Encoding.UTF8.GetString(eventArgs.Body.Span);
+                var message = JsonSerializer.Deserialize<Message>(body);
+                await this.OnMessage(this, new RabbitSubscriberEventArgs(message));
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, $"an error has occurred while processing a message: {ex.Message}");
+
+                if (eventArgs.Redelivered)
+                    channel.BasicReject(eventArgs.DeliveryTag, requeue: false);
+                else
+                    channel.BasicNack(eventArgs.DeliveryTag, multiple: false, requeue: true);
+            }            
         }
 
         public event AsyncEventHandler<RabbitSubscriberEventArgs> OnMessage;

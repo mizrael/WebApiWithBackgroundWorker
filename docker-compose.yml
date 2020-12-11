@@ -1,0 +1,37 @@
+version: '3.4'
+
+services:
+  webapiwithbackgroundworker.infrastructure.rabbitmq:        
+    image: rabbitmq:3-management-alpine
+    container_name: webapiwithbackgroundworker.infrastructure.rabbitmq    
+    restart: always
+    environment:
+     RABBITMQ_DEFAULT_VHOST: "/"
+    ports:     
+      - "15671:15671"
+      - "15672:15672"   
+    networks:
+      - infrastructure
+
+  webapiwithbackgroundworker.publisher:
+    image: ${DOCKER_REGISTRY-}webapiwithbackgroundworkerpublisher
+    depends_on:
+      - webapiwithbackgroundworker.infrastructure.rabbitmq
+    build:
+      context: .
+      dockerfile: WebApiWithBackgroundWorker.Publisher/Dockerfile
+    networks:
+      - infrastructure    
+
+  webapiwithbackgroundworker.subscriber:
+    image: ${DOCKER_REGISTRY-}webapiwithbackgroundworkersubscriber
+    depends_on:
+      - webapiwithbackgroundworker.infrastructure.rabbitmq
+    build:
+      context: .
+      dockerfile: WebApiWithBackgroundWorker.Subscriber/Dockerfile
+    networks:
+      - infrastructure    
+
+networks:
+  infrastructure:

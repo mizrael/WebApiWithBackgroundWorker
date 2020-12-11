@@ -8,18 +8,22 @@ namespace WebApiWithBackgroundWorker.Publisher
 {
     public class RabbitPublisher : IDisposable
     {
-        private const string ExchangeName = "messages"; 
+        private readonly string _exchangeName; 
         
         private readonly IBusConnection _connection;        
         private IModel _channel;
         private readonly IBasicProperties _properties;
 
-        public RabbitPublisher(IBusConnection connection)
+        public RabbitPublisher(IBusConnection connection, string exchangeName)
         {
+            if (string.IsNullOrWhiteSpace(exchangeName))            
+                throw new ArgumentException($"'{nameof(exchangeName)}' cannot be null or whitespace", nameof(exchangeName));
+            _exchangeName = exchangeName;
+
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
             _channel = _connection.CreateChannel();
-            _channel.ExchangeDeclare(exchange: ExchangeName, type: ExchangeType.Fanout);
-            _properties = _channel.CreateBasicProperties();
+            _channel.ExchangeDeclare(exchange: _exchangeName, type: ExchangeType.Fanout);
+            _properties = _channel.CreateBasicProperties();           
         }
 
         public void Publish(Message message)
@@ -29,7 +33,7 @@ namespace WebApiWithBackgroundWorker.Publisher
             var body = Encoding.UTF8.GetBytes(jsonData);            
 
             _channel.BasicPublish(
-                exchange: ExchangeName,
+                exchange: _exchangeName,
                 routingKey: string.Empty,
                 mandatory: true,
                 basicProperties: _properties,
