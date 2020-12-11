@@ -20,8 +20,7 @@ namespace WebApiWithBackgroundWorker.Publisher
                 HostName = rabbitConfig["HostName"],
                 UserName = rabbitConfig["UserName"],
                 Password = rabbitConfig["Password"],
-                Port = AmqpTcpEndpoint.UseDefaultPort,
-                DispatchConsumersAsync = true
+                Port = AmqpTcpEndpoint.UseDefaultPort
             };
 
             var connection = new RabbitPersistentConnection(connectionFactory);

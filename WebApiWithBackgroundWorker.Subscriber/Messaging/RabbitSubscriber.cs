@@ -71,15 +71,18 @@ namespace WebApiWithBackgroundWorker.Subscriber.Messaging
             var consumer = sender as IBasicConsumer;
             var channel = consumer?.Model ?? _channel;
 
+            Message message = null;
             try
             {
                 var body = Encoding.UTF8.GetString(eventArgs.Body.Span);
-                var message = JsonSerializer.Deserialize<Message>(body);
+                message = JsonSerializer.Deserialize<Message>(body);
                 await this.OnMessage(this, new RabbitSubscriberEventArgs(message));
             }
             catch(Exception ex)
             {
-                _logger.LogError(ex, $"an error has occurred while processing a message: {ex.Message}");
+                var errMsg = (message is null) ? $"an error has occurred while processing a message: {ex.Message}"
+                    : $"an error has occurred while processing message '{message.Id}': {ex.Message}";
+                _logger.LogError(ex, errMsg);
 
                 if (eventArgs.Redelivered)
                     channel.BasicReject(eventArgs.DeliveryTag, requeue: false);
