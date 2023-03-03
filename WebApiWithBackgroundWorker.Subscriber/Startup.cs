@@ -48,6 +48,7 @@ namespace WebApiWithBackgroundWorker.Subscriber
                 HostName = rabbitConfig["HostName"],
                 UserName = rabbitConfig["UserName"],
                 Password = rabbitConfig["Password"],
+                VirtualHost = rabbitConfig["VirtualHost"],
                 Port = AmqpTcpEndpoint.UseDefaultPort,
                 DispatchConsumersAsync = true // this is mandatory to have Async Subscribers
             };
