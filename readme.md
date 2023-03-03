@@ -1,5 +1,5 @@
 # Description
-This repository contains a simple implementation of Pub/Sub in .NET Core. This code has been used as example accompaining a series of articles on my personal blog: https://www.davideguida.com/consuming-message-queues-using-net-core-background-workers-part-1-message-queues/
+This repository contains a simple implementation of Pub/Sub in .NET Core. This code has been used as example accompaining a series of articles on my personal blog: https://www.davidguida.net/consuming-message-queues-using-net-core-background-workers-part-1-message-queues/
 
 
 ## The Publisher
@@ -14,4 +14,4 @@ Once a message is received, the worker will send it to a Producer which will the
 
 The Web API exposes a single GET endpoint /messages which will return the list of received messages.
 
-For more details about Producer/Consumer, check this article: https://www.davideguida.com/how-to-implement-producer-consumer-with-system-threading-channels/
+For more details about Producer/Consumer, check this article: https://www.davidguida.net/how-to-implement-producer-consumer-with-system-threading-channels/
