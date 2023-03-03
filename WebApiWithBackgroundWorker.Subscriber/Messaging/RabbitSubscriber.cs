@@ -77,6 +77,8 @@ namespace WebApiWithBackgroundWorker.Subscriber.Messaging
                 var body = Encoding.UTF8.GetString(eventArgs.Body.Span);
                 message = JsonSerializer.Deserialize<Message>(body);
                 await this.OnMessage(this, new RabbitSubscriberEventArgs(message));
+
+                channel.BasicAck(eventArgs.DeliveryTag, multiple: false);
             }
             catch(Exception ex)
             {
