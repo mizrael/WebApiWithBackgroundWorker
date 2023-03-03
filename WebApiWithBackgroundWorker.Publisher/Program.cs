@@ -20,6 +20,7 @@ namespace WebApiWithBackgroundWorker.Publisher
                 HostName = rabbitConfig["HostName"],
                 UserName = rabbitConfig["UserName"],
                 Password = rabbitConfig["Password"],
+                VirtualHost = rabbitConfig["VirtualHost"],
                 Port = AmqpTcpEndpoint.UseDefaultPort
             };
 

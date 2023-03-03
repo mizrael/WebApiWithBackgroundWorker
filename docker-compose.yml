@@ -6,32 +6,8 @@ services:
     container_name: webapiwithbackgroundworker.infrastructure.rabbitmq    
     restart: always
     environment:
-     RABBITMQ_DEFAULT_VHOST: "/"
+     RABBITMQ_DEFAULT_VHOST: "/WebApiWithBackgroundWorker"
     ports:     
       - "15671:15671"
       - "15672:15672"   
-    networks:
-      - infrastructure
-
-  webapiwithbackgroundworker.publisher:
-    image: ${DOCKER_REGISTRY-}webapiwithbackgroundworkerpublisher
-    depends_on:
-      - webapiwithbackgroundworker.infrastructure.rabbitmq
-    build:
-      context: .
-      dockerfile: WebApiWithBackgroundWorker.Publisher/Dockerfile
-    networks:
-      - infrastructure    
-
-  webapiwithbackgroundworker.subscriber:
-    image: ${DOCKER_REGISTRY-}webapiwithbackgroundworkersubscriber
-    depends_on:
-      - webapiwithbackgroundworker.infrastructure.rabbitmq
-    build:
-      context: .
-      dockerfile: WebApiWithBackgroundWorker.Subscriber/Dockerfile
-    networks:
-      - infrastructure    
-
-networks:
-  infrastructure:
+      - "5672:5672"
